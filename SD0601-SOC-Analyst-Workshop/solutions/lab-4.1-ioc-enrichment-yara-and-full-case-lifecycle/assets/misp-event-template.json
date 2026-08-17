@@ -1,0 +1,87 @@
+{
+  "Event": {
+    "distribution": 1,
+    "threat_level_id": 1,
+    "analysis": 1,
+    "info": "Lab 4.1 — Phishing Campaign: Invoice Lure — Ledgerlyne Financial — August 2024",
+    "date": "2024-08-14",
+    "Attribute": [
+      {
+        "category": "Payload delivery",
+        "type": "sha256",
+        "value": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
+        "comment": "SHA-256 of Invoice_August2024.docm (EICAR-style lab sample). VT: 60/72 detections.",
+        "to_ids": true,
+        "distribution": 1,
+        "Tag": [
+          { "name": "tlp:amber" },
+          { "name": "misp-galaxy:mitre-attack-pattern=\"Phishing: Spearphishing Attachment - T1566.001\"" }
+        ]
+      },
+      {
+        "category": "Network activity",
+        "type": "ip-src",
+        "value": "185.220.101.55",
+        "comment": "Sender IP extracted from phishing email Received headers. AbuseIPDB score: 100. Country: DE. Known Tor exit / C2 node.",
+        "to_ids": true,
+        "distribution": 1,
+        "Tag": [
+          { "name": "tlp:amber" },
+          { "name": "misp-galaxy:mitre-attack-pattern=\"Phishing - T1566\"" }
+        ]
+      },
+      {
+        "category": "Network activity",
+        "type": "domain",
+        "value": "ledger-secure-update.com",
+        "comment": "Phishing domain used as lure. VT: 8/92 malicious. Registered 3 days before campaign. Typosquatting 'ledgerlyne.com'.",
+        "to_ids": true,
+        "distribution": 1,
+        "Tag": [
+          { "name": "tlp:amber" },
+          { "name": "misp-galaxy:mitre-attack-pattern=\"Phishing: Spearphishing Attachment - T1566.001\"" }
+        ]
+      },
+      {
+        "category": "Payload delivery",
+        "type": "filename",
+        "value": "Invoice_August2024.docm",
+        "comment": "Macro-enabled Word document used as phishing lure. Sent to 7 Finance team members.",
+        "to_ids": false,
+        "distribution": 1,
+        "Tag": [
+          { "name": "tlp:amber" },
+          { "name": "misp-galaxy:mitre-attack-pattern=\"User Execution: Malicious File - T1204.002\"" }
+        ]
+      },
+      {
+        "category": "Network activity",
+        "type": "url",
+        "value": "http://185.220.101.55/payload.zip",
+        "comment": "Embedded URL in phishing email — second-stage payload download URL.",
+        "to_ids": true,
+        "distribution": 1,
+        "Tag": [
+          { "name": "tlp:amber" },
+          { "name": "misp-galaxy:mitre-attack-pattern=\"Ingress Tool Transfer - T1105\"" }
+        ]
+      },
+      {
+        "category": "External analysis",
+        "type": "link",
+        "value": "https://www.virustotal.com/gui/file/275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f",
+        "comment": "VirusTotal report for the sample hash",
+        "to_ids": false,
+        "distribution": 1
+      }
+    ],
+    "Tag": [
+      { "name": "tlp:amber" },
+      { "name": "type:OSINT" },
+      { "name": "workflow:state=\"complete\"" },
+      { "name": "misp-galaxy:mitre-attack-pattern=\"Phishing: Spearphishing Attachment - T1566.001\"" },
+      { "name": "misp-galaxy:threat-actor=\"Unknown\"" },
+      { "name": "sector:finance" }
+    ]
+  }
+}

@@ -1,0 +1,97 @@
+course:
+  id: "SD0601"
+  name: "SOC Analyst: Security Monitoring and Incident Response"
+  duration_days: 5
+  hours: 60
+  format: "Theory + Hands-on Labs"
+  audience: "Aspiring L1/L2 SOC Analysts and Cybersecurity Engineers"
+
+days:
+  1:
+    title: "SOC Foundations & ATT&CK Mapping"
+    labs: ["1.1"]
+  2:
+    title: "Log Pipeline Engineering & Sysmon"
+    labs: ["2.1"]
+  3:
+    title: "SIEM Build-Out & Detection Engineering"
+    labs: ["3.1"]
+  4:
+    title: "IOC Enrichment, YARA & Case Management"
+    labs: ["4.1"]
+  5:
+    title: "Endpoint Hunting, Memory Triage & Live Drill"
+    labs: ["5.1", "6.1"]
+
+resource_profiles:
+  minimal:
+    available_ram_gb: 5
+    total_ram_gb: 8
+    description: "8 GB machines — ELK only"
+    services:
+      elasticsearch: {enabled: true, heap_mb: 512}
+      kibana: {enabled: true, mem_limit_mb: 256}
+      logstash: {enabled: false}
+      splunk: {enabled: false}
+      wazuh_manager: {enabled: false}
+      wazuh_indexer: {enabled: false}
+      wazuh_dash: {enabled: false}
+      thehive: {enabled: false}
+      cortex: {enabled: false}
+      cassandra: {enabled: false}
+      misp: {enabled: false}
+    lab_coverage:
+      1.1: full
+      2.1: partial
+      3.1: partial
+      4.1: none
+      5.1: none
+      6.1: none
+
+  standard:
+    available_ram_gb: 10
+    total_ram_gb: 16
+    description: "16 GB machines — ELK + Wazuh + TheHive"
+    services:
+      elasticsearch: {enabled: true, heap_mb: 1024}
+      kibana: {enabled: true, mem_limit_mb: 512}
+      logstash: {enabled: true, heap_mb: 384}
+      splunk: {enabled: false, note: "swap-only for Lab 3.1"}
+      wazuh_manager: {enabled: true, mem_limit_mb: 384}
+      wazuh_indexer: {enabled: true, heap_mb: 512}
+      wazuh_dash: {enabled: true, mem_limit_mb: 256}
+      thehive: {enabled: true, mem_limit_mb: 384}
+      cortex: {enabled: true, mem_limit_mb: 192}
+      cassandra: {enabled: true, mem_limit_mb: 512}
+      misp: {enabled: false}
+    lab_coverage:
+      1.1: full
+      2.1: full
+      3.1: partial
+      4.1: partial
+      5.1: full
+      6.1: full
+
+  full:
+    available_ram_gb: 20
+    total_ram_gb: 32
+    description: "32 GB machines — All stacks simultaneously"
+    services:
+      elasticsearch: {enabled: true, heap_mb: 1536}
+      kibana: {enabled: true, mem_limit_mb: 768}
+      logstash: {enabled: true, heap_mb: 512}
+      splunk: {enabled: true, mem_limit_mb: 1536}
+      wazuh_manager: {enabled: true, mem_limit_mb: 512}
+      wazuh_indexer: {enabled: true, heap_mb: 768}
+      wazuh_dash: {enabled: true, mem_limit_mb: 384}
+      thehive: {enabled: true, mem_limit_mb: 512}
+      cortex: {enabled: true, mem_limit_mb: 256}
+      cassandra: {enabled: true, mem_limit_mb: 1024}
+      misp: {enabled: true, mem_limit_mb: 512}
+    lab_coverage:
+      1.1: full
+      2.1: full
+      3.1: full
+      4.1: full
+      5.1: full
+      6.1: full

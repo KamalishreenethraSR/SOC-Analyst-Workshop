@@ -1,0 +1,166 @@
+version: "3.8"
+
+# ──────────────────────────────────────────────────────────────────
+#  Lab 4.1 — TheHive 5 + Cortex + MISP Stack
+#  SD0601 SOC Analyst Workshop
+#
+#  Services:
+#    - TheHive   :9000   (Case Management)
+#    - Cortex    :9001   (Analyzer Engine)
+#    - MISP      :443    (Threat Intelligence)
+#    - Cassandra         (TheHive backend DB)
+#    - Elasticsearch     (TheHive + MISP indexing)
+#
+#  Usage:
+#    docker compose up -d
+#    docker compose ps
+#    docker compose logs -f thehive
+#    docker compose down -v
+# ──────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Cassandra (TheHive database) ───────────────────────────────
+  cassandra:
+    image: cassandra:4.1
+    container_name: cassandra
+    hostname: cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=thehive
+      - MAX_HEAP_SIZE=1G
+      - HEAP_NEWSIZE=200M
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    networks:
+      - soc-lab
+
+  # ── Elasticsearch (TheHive indexing) ──────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.12
+    container_name: elasticsearch-thehive
+    environment:
+      - node.name=es01
+      - cluster.name=thehive-cluster
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata-thehive:/usr/share/elasticsearch/data
+    ports:
+      - "9202:9200"
+    networks:
+      - soc-lab
+
+  # ── TheHive 5 ─────────────────────────────────────────────────
+  thehive:
+    image: strangebee/thehive:5.3
+    container_name: thehive
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
+    environment:
+      - JVM_OPTS=-Xms512m -Xmx1g
+    volumes:
+      - thehive-data:/opt/thp/thehive/data
+    ports:
+      - "9000:9000"
+    command:
+      - --cortex-port
+      - "9001"
+      - --cortex-keys
+      - "CORTEX_API_KEY_PLACEHOLDER"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9000/api/v1/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    networks:
+      - soc-lab
+
+  # ── Cortex ────────────────────────────────────────────────────
+  cortex:
+    image: thehiveproject/cortex:3.1.8
+    container_name: cortex
+    environment:
+      - JOB_DIRECTORY=/tmp/cortex-jobs
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - cortex-jobs:/tmp/cortex-jobs
+    ports:
+      - "9001:9001"
+    depends_on:
+      - elasticsearch
+    networks:
+      - soc-lab
+
+  # ── MISP ──────────────────────────────────────────────────────
+  misp:
+    image: ghcr.io/misp/misp-docker/misp-core:latest
+    container_name: misp
+    environment:
+      - MISP_BASEURL=https://localhost
+      - MISP_ADMIN_EMAIL=admin@admin.test
+      - MISP_ADMIN_PASSPHRASE=admin
+      - MISP_GPG_PASSPHRASE=misp-gpg
+      - SMTP_HOSTNAME=localhost
+      - MYSQL_HOST=misp-db
+      - MYSQL_DATABASE=misp
+      - MYSQL_USER=misp
+      - MYSQL_PASSWORD=misp_pass
+    ports:
+      - "443:443"
+      - "80:80"
+    depends_on:
+      - misp-db
+    volumes:
+      - misp-data:/var/www/MISP
+    networks:
+      - soc-lab
+
+  misp-db:
+    image: mysql:8.0
+    container_name: misp-db
+    environment:
+      - MYSQL_DATABASE=misp
+      - MYSQL_USER=misp
+      - MYSQL_PASSWORD=misp_pass
+      - MYSQL_ROOT_PASSWORD=misp_root_pass
+    volumes:
+      - misp-db-data:/var/lib/mysql
+    networks:
+      - soc-lab
+
+volumes:
+  cassandra-data:
+  esdata-thehive:
+  thehive-data:
+  cortex-jobs:
+  misp-data:
+  misp-db-data:
+
+networks:
+  soc-lab:
+    driver: bridge
+
+# ──────────────────────────────────────────────────────────────
+# IMPORTANT:
+#   After startup, replace CORTEX_API_KEY_PLACEHOLDER with a
+#   real Cortex API key generated in the Cortex UI under
+#   Organization → Users → API Key.
+#
+#   Initial credentials:
+#     TheHive: admin@thehive.local / secret
+#     Cortex:  Set on first login
+#     MISP:    admin@admin.test / admin (CHANGE IMMEDIATELY)
+# ──────────────────────────────────────────────────────────────

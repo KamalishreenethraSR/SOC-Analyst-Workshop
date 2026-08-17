@@ -1,0 +1,8 @@
+*.mem
+*.pcap
+.DS_Store
+node_modules/
+sd0601-lab-automation/.env
+sd0601-lab-automation/state/
+sd0601-lab-automation/logs/
+sd0601-lab-automation/students/

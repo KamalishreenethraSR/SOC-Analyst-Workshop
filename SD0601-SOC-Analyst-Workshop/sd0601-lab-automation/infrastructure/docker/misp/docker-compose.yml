@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  misp-db:
+    image: mysql:8.0
+    container_name: misp-db
+    environment:
+      - MYSQL_DATABASE=misp
+      - MYSQL_USER=misp
+      - MYSQL_PASSWORD=misp_pass
+      - MYSQL_ROOT_PASSWORD=misp_root_pass
+    volumes:
+      - misp-db-data:/var/lib/mysql
+    networks:
+      soc-lab:
+        ipv4_address: 10.60.0.49
+
+  misp:
+    image: ghcr.io/misp/misp-docker/misp-core:latest
+    container_name: misp
+    environment:
+      - MISP_BASEURL=https://localhost:9443
+      - MISP_ADMIN_EMAIL=${MISP_ADMIN_EMAIL:-admin@admin.test}
+      - MISP_ADMIN_PASSPHRASE=${MISP_ADMIN_PASS:-admin}
+      - MYSQL_HOST=misp-db
+      - MYSQL_DATABASE=misp
+      - MYSQL_USER=misp
+      - MYSQL_PASSWORD=misp_pass
+    ports:
+      - "9443:443"
+    depends_on:
+      - misp-db
+    volumes:
+      - misp-data:/var/www/MISP
+    networks:
+      soc-lab:
+        ipv4_address: 10.60.0.50
+
+volumes:
+  misp-db-data:
+  misp-data:
+
+networks:
+  soc-lab:
+    external: true

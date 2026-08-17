@@ -1,0 +1,87 @@
+##########################################
+# Filebeat Configuration — Lab 2.1
+# SD0601 SOC Analyst Workshop
+# Ubuntu 22.04 VM
+##########################################
+
+filebeat.inputs:
+
+  # ── Input 1: Linux auth.log ───────────────────────────────────
+  - type: filestream
+    id: linux-auth-log
+    enabled: true
+    paths:
+      - /var/log/auth.log
+    fields:
+      log_type: linux_auth
+      os: ubuntu
+    fields_under_root: true
+    tags: ["linux", "auth", "syslog", "soc-lab"]
+
+  # ── Input 2: Linux syslog ─────────────────────────────────────
+  - type: filestream
+    id: linux-syslog
+    enabled: true
+    paths:
+      - /var/log/syslog
+    fields:
+      log_type: linux_syslog
+      os: ubuntu
+    fields_under_root: true
+    tags: ["linux", "syslog", "soc-lab"]
+
+  # ── Input 3: Apache access log (Lab Challenge) ────────────────
+  - type: filestream
+    id: apache-access-log
+    enabled: false        # Enable for the lab challenge step
+    paths:
+      - /var/log/apache2/access.log
+    fields:
+      log_type: apache_access
+      os: ubuntu
+    fields_under_root: true
+    tags: ["linux", "apache", "web", "soc-lab"]
+
+# ── Processors ────────────────────────────────────────────────────
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_fields:
+      target: ''
+      fields:
+        environment: soc-lab
+        lab: lab-2.1
+
+# ── Output: Elasticsearch ─────────────────────────────────────────
+output.elasticsearch:
+  hosts: ["http://<DOCKER_HOST_IP>:9200"]
+  username: "elastic"
+  password: "changeme"
+  index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+
+# ── Index Template ────────────────────────────────────────────────
+setup.template.name: "filebeat"
+setup.template.pattern: "filebeat-*"
+setup.kibana:
+  host: "http://<DOCKER_HOST_IP>:5601"
+
+# ── ILM ───────────────────────────────────────────────────────────
+setup.ilm.enabled: true
+
+# ── Logging ───────────────────────────────────────────────────────
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0640
+
+# ────────────────────────────────────────────────────────────────
+# IMPORTANT: Replace <DOCKER_HOST_IP> with your actual Docker
+# host IP address before starting Filebeat.
+#
+# To enable the Apache log input for the lab challenge:
+#   Change "enabled: false" to "enabled: true" under Input 3
+#   Then: sudo systemctl restart filebeat
+# ────────────────────────────────────────────────────────────────

@@ -1,0 +1,22 @@
+lab_id: "3.1"
+module: 3
+title: "SIEM Build-Out and Detection Engineering"
+required_vms: ["windows_victim", "ubuntu_analyst"]
+required_services: ["elasticsearch", "kibana", "splunk"]
+required_datasets: ["windows_security", "sysmon_events", "zeek_conn", "zeek_dns"]
+required_network_state: "soc-lab"
+required_accounts: ["student"]
+required_dashboards: ["Splunk Security Overview", "Kibana Security Overview"]
+required_alerts: ["Splunk Brute Force Alert", "Kibana Beaconing Detection"]
+verification_tests:
+  - "splunk_web_login"
+  - "splunk_main_index_data"
+  - "splunk_zeek_index_data"
+  - "splunk_brute_force_spl"
+  - "splunk_port_scan_spl"
+  - "splunk_beaconing_spl"
+  - "kibana_kql_queries_valid"
+reset_procedure: "reset_splunk_indexes_and_kibana_saved_objects"
+deliverables:
+  - "detection-queries.spl"
+  - "detection-queries.kql"

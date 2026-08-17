@@ -1,0 +1,42 @@
+datasets:
+  windows_security:
+    filename: "windows-security.json"
+    type: "evtx_json"
+    sha256: "synthetic_windows_security_sha256"
+    lab: "2.1"
+    description: "Windows Security EVTX log dataset containing Event ID 4624, 4625, 4720, 4698 events"
+
+  sysmon_events:
+    filename: "sysmon-events.json"
+    type: "sysmon_json"
+    sha256: "synthetic_sysmon_sha256"
+    lab: "2.1"
+    description: "Sysmon Operational log dataset containing Event ID 1, 3, 11 events"
+
+  linux_auth:
+    filename: "linux-auth.log"
+    type: "syslog"
+    sha256: "synthetic_linux_auth_sha256"
+    lab: "2.1"
+    description: "Linux auth.log dataset containing SSH authentication failures and sudo invocations"
+
+  zeek_conn:
+    filename: "conn.log"
+    type: "zeek"
+    sha256: "synthetic_zeek_conn_sha256"
+    lab: "3.1"
+    description: "Zeek network connection log showing port scans and beaconing patterns"
+
+  zeek_dns:
+    filename: "dns.log"
+    type: "zeek"
+    sha256: "synthetic_zeek_dns_sha256"
+    lab: "3.1"
+    description: "Zeek DNS log showing suspicious domain queries"
+
+  phishing_eml:
+    filename: "suspicious-invoice.eml"
+    type: "email"
+    sha256: "synthetic_phishing_eml_sha256"
+    lab: "4.1"
+    description: "Benign phishing invoice email containing macro dropper indicators"

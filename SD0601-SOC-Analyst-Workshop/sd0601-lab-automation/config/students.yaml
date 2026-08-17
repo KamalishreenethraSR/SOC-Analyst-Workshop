@@ -1,0 +1,9 @@
+students:
+  - id: "STUDENT001"
+    name: "Alex Rivera"
+    email: "alex@student.soc"
+    workspace: "students/STUDENT001"
+  - id: "STUDENT002"
+    name: "Jordan Lee"
+    email: "jordan@student.soc"
+    workspace: "students/STUDENT002"

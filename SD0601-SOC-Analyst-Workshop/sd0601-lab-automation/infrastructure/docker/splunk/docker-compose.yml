@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  splunk:
+    image: splunk/splunk:9.2
+    container_name: splunk
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_PASSWORD=${SPLUNK_PASSWORD:-changeme}
+      - SPLUNK_LICENSE_URI=Free
+    ports:
+      - "8000:8000"
+      - "8088:8088"
+      - "9997:9997"
+    volumes:
+      - splunk-var:/opt/splunk/var
+      - splunk-etc:/opt/splunk/etc
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/en-US/account/login"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+    networks:
+      soc-lab:
+        ipv4_address: 10.60.0.20
+
+volumes:
+  splunk-var:
+  splunk-etc:
+
+networks:
+  soc-lab:
+    external: true

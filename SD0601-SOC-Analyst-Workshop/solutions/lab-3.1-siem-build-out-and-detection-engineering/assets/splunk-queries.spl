@@ -1,0 +1,103 @@
+// ─────────────────────────────────────────────────────────────────
+// Lab 3.1 — SPL Detection Queries
+// SD0601 SOC Analyst Workshop
+// Platform: Splunk 9.x
+// ─────────────────────────────────────────────────────────────────
+
+// ════════════════════════════════════════════════════════════════
+// QUERY 1 — Brute Force Detection
+// Source: Windows Security Event Log (EventCode 4625)
+// MITRE ATT&CK: T1110.001 — Brute Force: Password Guessing
+// ════════════════════════════════════════════════════════════════
+
+index=main sourcetype="WinEventLog:Security" EventCode=4625
+| stats count by src_ip, dest_user
+| where count > 5
+| sort -count
+| rename count as "Failed Attempts", src_ip as "Source IP", dest_user as "Target Account"
+| eval risk_level=case(count>50,"Critical",count>20,"High",count>5,"Medium",true(),"Low")
+
+/*
+Expected Results:
+  Source IP       Target Account   Failed Attempts   Risk Level
+  10.10.5.22      Administrator    47               High
+  10.10.5.22      admin            23               High
+  192.168.1.44    svc_backup        9               Medium
+
+MITRE Mapping: T1110.001
+Save as alert: trigger when count of results > 0
+*/
+
+
+// ════════════════════════════════════════════════════════════════
+// QUERY 2 — Port Scan Detection
+// Source: Zeek conn.log
+// MITRE ATT&CK: T1046 — Network Service Discovery
+// ════════════════════════════════════════════════════════════════
+
+index=zeek sourcetype="zeek:conn"
+| stats dc(dest_port) as unique_ports count as total_connections by src_ip
+| where unique_ports > 20
+| sort -unique_ports
+| rename unique_ports as "Unique Ports Scanned", src_ip as "Source IP", total_connections as "Total Connections"
+| eval scan_confidence=case(unique_ports>100,"Very High",unique_ports>50,"High",unique_ports>20,"Medium")
+
+/*
+Expected Results:
+  Source IP       Unique Ports Scanned  Total Connections  Scan Confidence
+  10.10.3.15      142                   1897               Very High
+  192.168.5.22     31                    156               Medium
+
+MITRE Mapping: T1046
+*/
+
+
+// ════════════════════════════════════════════════════════════════
+// QUERY 3 — C2 Beaconing Detection
+// Source: Zeek conn.log
+// MITRE ATT&CK: T1071.001 — App Layer Protocol: Web Protocols
+// ════════════════════════════════════════════════════════════════
+
+index=zeek sourcetype="zeek:conn"
+| stats count avg(duration) as avg_dur stdev(duration) as stdev_dur
+        sum(orig_bytes) as total_bytes
+  by src_ip, dest_ip
+| where count > 20 AND avg_dur < 5 AND stdev_dur < 1
+| eval beacon_regularity = round(1 - (stdev_dur / (avg_dur + 0.001)), 3)
+| where beacon_regularity > 0.80
+| eval risk="Possible C2 Beaconing"
+| sort -count
+| table src_ip, dest_ip, count, avg_dur, stdev_dur, beacon_regularity, total_bytes, risk
+
+/*
+Expected Results:
+  src_ip         dest_ip          count  avg_dur  stdev_dur  beacon_regularity
+  10.10.1.45     185.220.101.55   187    2.13     0.08       0.963
+
+MITRE Mapping: T1071.001
+*/
+
+
+// ════════════════════════════════════════════════════════════════
+// BONUS — Slow / Low-and-Slow Brute Force (2-hour window)
+// Used for the hands-on lab challenge
+// MITRE ATT&CK: T1110.001
+// ════════════════════════════════════════════════════════════════
+
+index=main sourcetype="WinEventLog:Security" EventCode=4625
+| bucket _time span=2h
+| stats count by _time, src_ip, dest_user
+| where count > 3
+| eval window_start=strftime(_time,"%Y-%m-%d %H:%M")
+| rename count as "Attempts (2h window)", src_ip as "Source IP",
+          dest_user as "Target Account", window_start as "Window Start"
+| sort -"Attempts (2h window)"
+
+/*
+Key insight: Standard 5-minute threshold would miss this.
+Defenders should create BOTH:
+  - 5-min window, threshold=5 (fast brute force)
+  - 2-hr window, threshold=4  (slow brute force)
+
+MITRE Mapping: T1110.001 (same technique, different timing pattern)
+*/

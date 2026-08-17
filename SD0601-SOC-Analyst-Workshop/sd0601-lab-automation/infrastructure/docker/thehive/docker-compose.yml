@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  cassandra:
+    image: cassandra:4.1
+    container_name: cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=thehive
+      - MAX_HEAP_SIZE=512M
+      - HEAP_NEWSIZE=100M
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    networks:
+      soc-lab:
+        ipv4_address: 10.60.0.39
+
+  thehive:
+    image: strangebee/thehive:5.3
+    container_name: thehive
+    depends_on:
+      - cassandra
+    environment:
+      - JVM_OPTS=-Xms256m -Xmx512m
+    volumes:
+      - thehive-data:/opt/thp/thehive/data
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9000/api/v1/status"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+    networks:
+      soc-lab:
+        ipv4_address: 10.60.0.40
+
+  cortex:
+    image: thehiveproject/cortex:3.1.8
+    container_name: cortex
+    environment:
+      - JOB_DIRECTORY=/tmp/cortex-jobs
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - cortex-jobs:/tmp/cortex-jobs
+    ports:
+      - "9001:9001"
+    networks:
+      soc-lab:
+        ipv4_address: 10.60.0.41
+
+volumes:
+  cassandra-data:
+  thehive-data:
+  cortex-jobs:
+
+networks:
+  soc-lab:
+    external: true

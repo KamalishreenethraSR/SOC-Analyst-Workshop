@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  wazuh-manager:
+    image: wazuh/wazuh-manager:4.8.0
+    container_name: wazuh-manager
+    hostname: wazuh-manager
+    environment:
+      - INDEXER_URL=https://wazuh-indexer:9200
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=${ELASTIC_PASSWORD:-SecretPassword}
+      - API_USERNAME=${WAZUH_API_USER:-wazuh}
+      - API_PASSWORD=${WAZUH_API_PASSWORD:-wazuh}
+    volumes:
+      - wazuh-etc:/var/ossec/etc
+      - wazuh-logs:/var/ossec/logs
+      - wazuh-queue:/var/ossec/queue
+    ports:
+      - "1514:1514"
+      - "1515:1515"
+      - "55000:55000"
+    healthcheck:
+      test: ["CMD", "curl", "-sk", "-u", "${WAZUH_API_USER:-wazuh}:${WAZUH_API_PASSWORD:-wazuh}", "https://localhost:55000/"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+    networks:
+      soc-lab:
+        ipv4_address: 10.60.0.30
+
+  wazuh-dashboard:
+    image: wazuh/wazuh-dashboard:4.8.0
+    container_name: wazuh-dashboard
+    hostname: wazuh-dashboard
+    environment:
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=${ELASTIC_PASSWORD:-SecretPassword}
+      - WAZUH_API_URL=https://wazuh-manager
+      - API_USERNAME=${WAZUH_API_USER:-wazuh}
+      - API_PASSWORD=${WAZUH_API_PASSWORD:-wazuh}
+    ports:
+      - "8443:5601"
+    depends_on:
+      wazuh-manager:
+        condition: service_healthy
+    networks:
+      soc-lab:
+        ipv4_address: 10.60.0.31
+
+volumes:
+  wazuh-etc:
+  wazuh-logs:
+  wazuh-queue:
+
+networks:
+  soc-lab:
+    external: true

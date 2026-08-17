@@ -1,0 +1,117 @@
+# ─────────────────────────────────────────────────────────────────
+# Lab 3.1 — Kibana KQL Detection Queries
+# SD0601 SOC Analyst Workshop
+# Platform: Kibana 8.x
+# ─────────────────────────────────────────────────────────────────
+
+# ════════════════════════════════════════════════════════════════
+# QUERY 1 — Failed Logins (Brute Force Detection)
+# Use in: Kibana Discover → winlogbeat-* index
+# MITRE ATT&CK: T1110.001 — Brute Force: Password Guessing
+# ════════════════════════════════════════════════════════════════
+
+event.code:4625 AND event.outcome:failure
+
+# Visualization (Data Table):
+#   Metrics:  Count
+#   Buckets:
+#     Row 1: Terms → source.ip (top 10, order by count desc)
+#     Row 2: Terms → user.name (top 5)
+#
+# Expected top result:
+#   10.10.5.22  |  administrator  |  47
+#
+# Kibana Rule (Stack Management → Rules → Elasticsearch query):
+#   Look-back: 5m
+#   Threshold: > 5 occurrences per source.ip
+#   Action: Email soc-team@company.com
+
+
+# ════════════════════════════════════════════════════════════════
+# QUERY 2 — Port Scan Detection (from Zeek conn.log)
+# Use in: Kibana Discover → filebeat-* or zeek-* index
+# MITRE ATT&CK: T1046 — Network Service Discovery
+# ════════════════════════════════════════════════════════════════
+
+log_type:zeek_conn AND NOT destination.ip:10.10.0.0/8
+
+# Lens Visualization (Unique Count):
+#   X-axis: source.ip (top 10 by unique destination.port count)
+#   Y-axis: Unique count of destination.port
+#   Filter: unique count > 20
+#
+# Expected:
+#   10.10.3.15 → 142 unique ports
+
+
+# ════════════════════════════════════════════════════════════════
+# QUERY 3 — Beaconing / C2 Pattern Detection
+# Use in: Kibana Discover → filebeat-* or zeek-* index  
+# MITRE ATT&CK: T1071.001 — App Layer Protocol: Web Protocols
+# ════════════════════════════════════════════════════════════════
+
+log_type:zeek_conn AND NOT destination.ip:10.0.0.0/8 AND NOT destination.ip:192.168.0.0/16
+
+# TSVB Visualization (Time Series):
+#   Group by: source.ip + destination.ip pairs
+#   Metric: Count of connections (5-min buckets)
+#   Look for: Highly regular intervals (same count each bucket), single external dest
+#
+# Lens Configuration:
+#   X: Date histogram (5m)
+#   Y: Count
+#   Break down: destination.ip (filter to external IPs only)
+#   Expected: 185.220.101.55 shows flat/regular count every 5 minutes
+
+
+# ════════════════════════════════════════════════════════════════
+# QUERY 4 — Privilege Escalation: New Local Admin
+# Use in: Kibana Discover → winlogbeat-* index
+# MITRE ATT&CK: T1136.001 — Create Account: Local Account
+#               T1098 — Account Manipulation
+# ════════════════════════════════════════════════════════════════
+
+event.code:(4720 OR 4732) AND winlog.event_data.MemberSid:*-500
+
+# event.code 4720 = user account created
+# event.code 4732 = member added to security-enabled local group
+# MemberSid ending in -500 = Administrator group SID
+#
+# Expected alert:
+#   4720 → New account: contractor_acc1
+#   4732 → contractor_acc1 added to Administrators group
+
+
+# ════════════════════════════════════════════════════════════════
+# QUERY 5 — Scheduled Task Persistence
+# Use in: Kibana Discover → winlogbeat-* index
+# MITRE ATT&CK: T1053.005 — Scheduled Task/Job: Scheduled Task
+# ════════════════════════════════════════════════════════════════
+
+event.code:4698
+
+# Filter fields of interest:
+#   winlog.event_data.TaskName
+#   winlog.event_data.SubjectUserName
+#   winlog.event_data.TaskContent (XML — shows command executed)
+#
+# Expected result:
+#   TaskName: \Microsoft\Windows\WindowsUpdateHelper
+#   SubjectUserName: contractor_acc1
+
+
+# ════════════════════════════════════════════════════════════════
+# BONUS — Slow Brute Force (2-hour window for lab challenge)
+# MITRE ATT&CK: T1110.001
+# ════════════════════════════════════════════════════════════════
+
+event.code:4625 AND event.outcome:failure
+
+# Kibana Rule Configuration:
+#   Name: Slow Brute Force - Extended Window
+#   Type: Elasticsearch query
+#   Look-back: 2h (instead of 5m)
+#   Threshold: > 4 occurrences grouped by source.ip
+#
+# This catches low-rate attackers that stay below 5-min thresholds.
+# TUNE: Adjust look-back to 2h, threshold to 4 in your rule.

@@ -1,0 +1,42 @@
+network:
+  name: "soc-lab"
+  driver: "bridge"
+  subnet: "10.60.0.0/24"
+  gateway: "10.60.0.1"
+
+services:
+  elasticsearch:
+    ip: "10.60.0.10"
+    ports: ["9200:9200"]
+  kibana:
+    ip: "10.60.0.11"
+    ports: ["5601:5601"]
+  splunk:
+    ip: "10.60.0.20"
+    ports: ["8000:8000", "8088:8088", "9997:9997"]
+  wazuh_manager:
+    ip: "10.60.0.30"
+    ports: ["1514:1514", "1515:1515", "55000:55000"]
+  wazuh_dashboard:
+    ip: "10.60.0.31"
+    ports: ["8443:5601"]
+  thehive:
+    ip: "10.60.0.40"
+    ports: ["9000:9000"]
+  cortex:
+    ip: "10.60.0.41"
+    ports: ["9001:9001"]
+  misp:
+    ip: "10.60.0.50"
+    ports: ["9443:443"]
+
+vms:
+  windows_victim:
+    ip: "10.60.0.100"
+    hostname: "VICTIMWIN10"
+  ubuntu_analyst:
+    ip: "10.60.0.101"
+    hostname: "UBUNTUSOC"
+  kali_attacker:
+    ip: "10.60.0.200"
+    hostname: "KALICONTROLLER"

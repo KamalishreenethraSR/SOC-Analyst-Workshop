@@ -1,0 +1,29 @@
+tools:
+  docker:
+    min_version: "24.0.0"
+  docker_compose:
+    min_version: "2.20.0"
+  elastic:
+    version: "8.13.0"
+  splunk:
+    version: "9.2.0"
+  wazuh:
+    version: "4.8.0"
+  thehive:
+    version: "5.3"
+  cortex:
+    version: "3.1.8"
+  misp:
+    version: "latest"
+  sysmon:
+    version: "15.0"
+  winlogbeat:
+    version: "8.13.0"
+  filebeat:
+    version: "8.13.0"
+  yara:
+    version: "4.3.2"
+  volatility:
+    version: "3.5.0"
+  atomic_red_team:
+    version: "master"

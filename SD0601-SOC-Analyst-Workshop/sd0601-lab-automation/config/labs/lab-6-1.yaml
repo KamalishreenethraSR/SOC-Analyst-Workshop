@@ -1,0 +1,19 @@
+lab_id: "6.1"
+module: 6
+title: "Atomic Red Team Live-Fire Detection Drill"
+required_vms: ["windows_victim", "ubuntu_analyst"]
+required_services: ["elasticsearch", "kibana", "wazuh_manager", "thehive"]
+required_datasets: []
+required_network_state: "soc-lab"
+required_accounts: ["student"]
+required_dashboards: ["Kibana Real-Time Detection"]
+required_alerts: ["Wazuh ART Execution Alert"]
+verification_tests:
+  - "full_stack_healthy"
+  - "atomic_red_team_installed"
+  - "atomic_prereqs_met"
+  - "art_allowlist_enforced"
+reset_procedure: "art_test_cleanup_and_restore_monitoring_baseline"
+deliverables:
+  - "incident-timeline.md"
+  - "drill-summary-report.md"

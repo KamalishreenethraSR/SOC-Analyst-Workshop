@@ -1,0 +1,9 @@
+{
+  "variant": "A",
+  "c2_ip": "185.220.101.55",
+  "phishing_domain": "ledger-secure-update.com",
+  "victim_ip": "10.60.0.100",
+  "target_user": "j.smith",
+  "target_host": "FINANCE-WIN10",
+  "sample_sha256": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"
+}

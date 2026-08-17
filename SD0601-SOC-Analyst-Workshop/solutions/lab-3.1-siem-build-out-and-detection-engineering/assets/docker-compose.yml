@@ -1,0 +1,104 @@
+version: "3.8"
+
+# ──────────────────────────────────────────────────────────────────
+#  Lab 3.1 — Splunk + ELK Stack
+#  SD0601 SOC Analyst Workshop
+#
+#  Services:
+#    - Splunk Free   :8000
+#    - Elasticsearch :9200
+#    - Kibana        :5601
+#
+#  Usage:
+#    docker compose up -d
+#    docker compose logs -f splunk       # Wait for "Splunk started"
+#    docker compose logs -f elasticsearch
+#    docker compose down -v              # Teardown
+# ──────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Splunk Free ──────────────────────────────────────────────
+  splunk:
+    image: splunk/splunk:9.2
+    container_name: splunk
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_PASSWORD=changeme
+      - SPLUNK_LICENSE_URI=Free
+    ports:
+      - "8000:8000"   # Splunk Web UI
+      - "8088:8088"   # HEC (HTTP Event Collector)
+      - "9997:9997"   # Splunk Forwarder port
+    volumes:
+      - splunk-var:/opt/splunk/var
+      - splunk-etc:/opt/splunk/etc
+      - /opt/lab-evidence:/tmp/lab-evidence:ro   # Mount evidence read-only
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/en-US/account/login"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+    networks:
+      - soc-lab
+
+  # ── Elasticsearch ─────────────────────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    environment:
+      - node.name=es01
+      - cluster.name=soc-lab-cluster
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=changeme
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:changeme http://localhost:9200/_cluster/health | grep -q 'green\\|yellow'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - soc-lab
+
+  # ── Kibana ────────────────────────────────────────────────────
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=changeme
+      - XPACK_SECURITY_ENCRYPTIONKEY=soc_lab_encryption_key_32_chars_long
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=soc_lab_saved_obj_key_32chars_ok
+      - XPACK_REPORTING_ENCRYPTIONKEY=soc_lab_reporting_key_32chars_len
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q 'available'"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    networks:
+      - soc-lab
+
+volumes:
+  splunk-var:
+  splunk-etc:
+  esdata:
+
+networks:
+  soc-lab:
+    driver: bridge

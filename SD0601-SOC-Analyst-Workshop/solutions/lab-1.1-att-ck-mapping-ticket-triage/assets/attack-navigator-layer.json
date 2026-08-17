@@ -1,0 +1,139 @@
+{
+  "name": "Lab1-StudentID",
+  "versions": {
+    "attack": "14",
+    "navigator": "4.9",
+    "layer": "4.5"
+  },
+  "domain": "enterprise-attack",
+  "description": "Lab 1.1 - ATT&CK Mapping: Phishing -> Macro -> PowerShell -> Scheduled Task -> Credential Dump -> Lateral RDP",
+  "filters": {
+    "platforms": [
+      "Windows"
+    ]
+  },
+  "sorting": 0,
+  "layout": {
+    "layout": "side",
+    "aggregateFunction": "average",
+    "showID": true,
+    "showName": true,
+    "showAggregateScores": false,
+    "countUnscored": false,
+    "expandedSubtechniques": "annotated"
+  },
+  "hideDisabled": false,
+  "techniques": [
+    {
+      "techniqueID": "T1566.001",
+      "tactic": "initial-access",
+      "color": "#e6550d",
+      "comment": "Stage 1: Phishing email with malicious invoice attachment (.docm). Finance employee targeted.",
+      "enabled": true,
+      "metadata": [],
+      "links": [],
+      "showSubtechniques": true
+    },
+    {
+      "techniqueID": "T1204.002",
+      "tactic": "execution",
+      "color": "#fd8d3c",
+      "comment": "Stage 2: User opened the macro-enabled document, triggering WinWord to spawn PowerShell.",
+      "enabled": true,
+      "metadata": [],
+      "links": [],
+      "showSubtechniques": false
+    },
+    {
+      "techniqueID": "T1059.001",
+      "tactic": "execution",
+      "color": "#fdae6b",
+      "comment": "Stage 3: PowerShell launched with -EncodedCommand to download second-stage payload.",
+      "enabled": true,
+      "metadata": [],
+      "links": [],
+      "showSubtechniques": true
+    },
+    {
+      "techniqueID": "T1105",
+      "tactic": "command-and-control",
+      "color": "#756bb1",
+      "comment": "Stage 3b: PowerShell downloaded second-stage tool from attacker C2 infrastructure.",
+      "enabled": true,
+      "metadata": [],
+      "links": [],
+      "showSubtechniques": false
+    },
+    {
+      "techniqueID": "T1053.005",
+      "tactic": "persistence",
+      "color": "#31a354",
+      "comment": "Stage 4: Scheduled task 'WindowsUpdateHelper' created for persistence. Event ID 4698 generated.",
+      "enabled": true,
+      "metadata": [],
+      "links": [],
+      "showSubtechniques": true
+    },
+    {
+      "techniqueID": "T1003",
+      "tactic": "credential-access",
+      "color": "#de2d26",
+      "comment": "Stage 5: Credential dumping from LSASS memory. Event ID 4720/4732 follow (new admin account).",
+      "enabled": true,
+      "metadata": [],
+      "links": [],
+      "showSubtechniques": false
+    },
+    {
+      "techniqueID": "T1021.001",
+      "tactic": "lateral-movement",
+      "color": "#3182bd",
+      "comment": "Stage 6: Attacker used stolen credentials to RDP to finance database server.",
+      "enabled": true,
+      "metadata": [],
+      "links": [],
+      "showSubtechniques": true
+    }
+  ],
+  "gradient": {
+    "colors": [
+      "#ff6666ff",
+      "#ffffffff",
+      "#6699ffff"
+    ],
+    "minValue": 0,
+    "maxValue": 100
+  },
+  "legendItems": [
+    {
+      "color": "#e6550d",
+      "label": "Initial Access"
+    },
+    {
+      "color": "#fd8d3c",
+      "label": "Execution"
+    },
+    {
+      "color": "#31a354",
+      "label": "Persistence"
+    },
+    {
+      "color": "#de2d26",
+      "label": "Credential Access"
+    },
+    {
+      "color": "#3182bd",
+      "label": "Lateral Movement"
+    },
+    {
+      "color": "#756bb1",
+      "label": "Command & Control"
+    }
+  ],
+  "metadata": [],
+  "links": [],
+  "showTacticRowBackground": true,
+  "tacticRowBackground": "#dddddd",
+  "selectTechniquesAcrossTactics": false,
+  "selectSubtechniquesWithParent": false
+}

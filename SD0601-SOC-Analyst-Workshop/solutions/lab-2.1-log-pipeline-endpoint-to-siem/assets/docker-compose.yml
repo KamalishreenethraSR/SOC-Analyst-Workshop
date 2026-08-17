@@ -1,0 +1,73 @@
+version: "3.8"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    environment:
+      - node.name=es01
+      - cluster.name=soc-lab-cluster
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=changeme
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:changeme http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - soc-lab
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=changeme
+      - XPACK_SECURITY_ENCRYPTIONKEY=a_very_long_random_encryption_key_32chars
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=another_long_random_key_for_saved_objects
+      - XPACK_REPORTING_ENCRYPTIONKEY=yet_another_long_random_key_for_reporting
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q '\"level\":\"available\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    networks:
+      - soc-lab
+
+volumes:
+  esdata:
+    driver: local
+
+networks:
+  soc-lab:
+    driver: bridge
+
+# ─────────────────────────────────────────────────────────────────
+#  Usage:
+#    docker compose up -d
+#    docker compose ps        # check health
+#    docker compose logs -f   # follow logs
+#    docker compose down -v   # teardown + remove volumes
+#
+#  Access:
+#    Elasticsearch:  http://localhost:9200  (elastic / changeme)
+#    Kibana:         http://localhost:5601  (elastic / changeme)
+# ─────────────────────────────────────────────────────────────────

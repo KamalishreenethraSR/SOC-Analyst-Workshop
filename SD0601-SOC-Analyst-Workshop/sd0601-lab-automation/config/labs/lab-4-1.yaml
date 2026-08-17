@@ -1,0 +1,21 @@
+lab_id: "4.1"
+module: 4
+title: "IOC Enrichment, YARA, and Full Case Lifecycle"
+required_vms: ["windows_victim"]
+required_services: ["thehive", "cortex", "misp"]
+required_datasets: ["phishing_eml"]
+required_network_state: "soc-lab"
+required_accounts: ["student"]
+required_dashboards: ["TheHive Case Dashboard"]
+required_alerts: ["MISP Attribute Match Alert"]
+verification_tests:
+  - "thehive_api_healthy"
+  - "cortex_api_healthy"
+  - "misp_event_created"
+  - "yara_rules_valid"
+  - "thehive_case_workflow"
+reset_procedure: "purge_thehive_cases_and_misp_events"
+deliverables:
+  - "suspicious_rule.yar"
+  - "misp-event.json"
+  - "case-summary-report.md"

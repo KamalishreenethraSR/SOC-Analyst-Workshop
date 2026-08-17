@@ -1,0 +1,20 @@
+lab_id: "5.1"
+module: 5
+title: "Endpoint Detection, Threat Hunt, and Memory Triage"
+required_vms: ["windows_victim", "ubuntu_analyst"]
+required_services: ["wazuh_manager", "wazuh_dashboard", "wazuh_indexer"]
+required_datasets: ["windows_security", "sysmon_events"]
+required_network_state: "soc-lab"
+required_accounts: ["student"]
+required_dashboards: ["Wazuh Security Dashboard"]
+required_alerts: ["Wazuh New User Alert", "Wazuh Scheduled Task Alert"]
+verification_tests:
+  - "wazuh_manager_api_healthy"
+  - "wazuh_agent_windows_active"
+  - "wazuh_agent_ubuntu_active"
+  - "auditd_passwd_rule_loaded"
+  - "volatility3_installed"
+reset_procedure: "reset_wazuh_agents_and_clear_audit_logs"
+deliverables:
+  - "threat-hunt-report.md"
+  - "volatility-notes.md"

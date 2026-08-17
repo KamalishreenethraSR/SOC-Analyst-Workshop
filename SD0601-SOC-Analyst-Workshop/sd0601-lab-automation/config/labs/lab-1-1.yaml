@@ -1,0 +1,18 @@
+lab_id: "1.1"
+module: 1
+title: "ATT&CK Mapping & Ticket Triage"
+required_vms: []
+required_services: []
+required_datasets: ["phishing_eml"]
+required_network_state: "isolated"
+required_accounts: ["student"]
+required_dashboards: []
+required_alerts: []
+verification_tests:
+  - "attack_layer_json_valid"
+  - "mock_tickets_triaged"
+  - "escalation_matrix_complete"
+reset_procedure: "restore_template_workspace"
+deliverables:
+  - "attack-navigator-layer.json"
+  - "triaged-tickets.md"

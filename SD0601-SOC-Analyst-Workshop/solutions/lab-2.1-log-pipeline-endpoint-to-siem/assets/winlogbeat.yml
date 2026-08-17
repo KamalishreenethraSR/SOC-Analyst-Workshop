@@ -1,0 +1,76 @@
+##########################################
+# Winlogbeat Configuration — Lab 2.1
+# SD0601 SOC Analyst Workshop
+##########################################
+
+winlogbeat.event_logs:
+  # Windows Security Channel — logon events, account management, etc.
+  - name: Security
+    ignore_older: 72h
+    event_id: 1102, 4624, 4625, 4634, 4647, 4648, 4656, 4657, 4663, 4672,
+              4688, 4689, 4697, 4698, 4699, 4700, 4701, 4702, 4720, 4722,
+              4724, 4725, 4726, 4728, 4729, 4732, 4733, 4738, 4740, 4743,
+              4756, 4757, 4768, 4769, 4776, 4778, 4779, 5140, 5142, 5145
+
+  # Sysmon Operational Channel — detailed endpoint telemetry
+  - name: Microsoft-Windows-Sysmon/Operational
+    ignore_older: 72h
+
+  # PowerShell logging
+  - name: Microsoft-Windows-PowerShell/Operational
+    ignore_older: 72h
+    event_id: 4103, 4104, 4105, 4106
+
+  # Windows System Channel
+  - name: System
+    ignore_older: 72h
+    event_id: 7045, 7040
+
+# ── Output: Elasticsearch ─────────────────────────────────────────
+output.elasticsearch:
+  hosts: ["http://<DOCKER_HOST_IP>:9200"]
+  username: "elastic"
+  password: "changeme"
+  # Use a daily rolling index
+  index: "winlogbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+
+# ── Index Template ────────────────────────────────────────────────
+setup.template.name: "winlogbeat"
+setup.template.pattern: "winlogbeat-*"
+setup.kibana:
+  host: "http://<DOCKER_HOST_IP>:5601"
+
+# ── ILM (Index Lifecycle Management) ─────────────────────────────
+setup.ilm.enabled: true
+setup.ilm.rollover_alias: "winlogbeat"
+setup.ilm.pattern: "{now/d}-000001"
+setup.ilm.policy_name: "winlogbeat"
+
+# ── Processors ────────────────────────────────────────────────────
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_fields:
+      target: ''
+      fields:
+        environment: soc-lab
+        lab: lab-2.1
+
+# ── Logging ───────────────────────────────────────────────────────
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: C:\ProgramData\winlogbeat\Logs
+  name: winlogbeat
+  keepfiles: 7
+  permissions: 0640
+
+# ── Tags ──────────────────────────────────────────────────────────
+tags: ["windows", "soc-lab", "winlogbeat"]
+
+# ────────────────────────────────────────────────────────────────
+# IMPORTANT: Replace <DOCKER_HOST_IP> with your actual Docker
+# host IP address before starting Winlogbeat.
+# ────────────────────────────────────────────────────────────────

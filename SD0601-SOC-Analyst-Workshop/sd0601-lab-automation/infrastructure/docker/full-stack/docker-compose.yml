@@ -1,0 +1,8 @@
+version: "3.8"
+
+include:
+  - ../elk/docker-compose.yml
+  - ../splunk/docker-compose.yml
+  - ../wazuh/docker-compose.yml
+  - ../thehive/docker-compose.yml
+  - ../misp/docker-compose.yml

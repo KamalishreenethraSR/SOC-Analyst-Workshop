@@ -1,0 +1,20 @@
+lab_id: "2.1"
+module: 2
+title: "Log Pipeline: Endpoint to SIEM"
+required_vms: ["windows_victim", "ubuntu_analyst"]
+required_services: ["elasticsearch", "kibana"]
+required_datasets: ["windows_security", "sysmon_events", "linux_auth"]
+required_network_state: "soc-lab"
+required_accounts: ["student"]
+required_dashboards: ["Kibana Log Overview"]
+required_alerts: ["SSH Brute Force Correlation"]
+verification_tests:
+  - "elasticsearch_cluster_green"
+  - "kibana_status_available"
+  - "sysmon_events_searchable"
+  - "windows_security_searchable"
+  - "linux_auth_searchable"
+  - "brute_force_rule_active"
+reset_procedure: "purge_indices_and_recreate_mappings"
+deliverables:
+  - "pipeline-verification-report.md"

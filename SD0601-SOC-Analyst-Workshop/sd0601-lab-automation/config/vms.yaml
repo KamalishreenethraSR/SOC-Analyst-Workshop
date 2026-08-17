@@ -1,0 +1,32 @@
+5os755vms:
+  windows_victim:
+    name: "Windows 10 Victim VM"
+    os: "Windows 10 Enterprise / Pro 64-bit"
+    min_ram_gb: 4
+    min_disk_gb: 40
+    roles: ["Log Forwarder (Winlogbeat)", "EDR Agent (Wazuh)", "Telemetry Generator", "Atomic Red Team Target"]
+    required_services: ["Sysmon64", "winlogbeat", "WazuhSvc"]
+
+  ubuntu_analyst:
+    name: "Ubuntu 22.04 Analyst VM"
+    os: "Ubuntu 22.04 LTS 64-bit"
+    min_ram_gb: 2
+    min_disk_gb: 20
+    roles: ["Log Forwarder (Filebeat)", "Audit Daemon (auditd)", "Wazuh Agent", "Analyst Workstation"]
+    required_services: ["filebeat", "auditd", "wazuh-agent"]
+
+  kali_attacker:
+    name: "Kali Linux Attacker VM (Instructor / Live Drill)"
+    os: "Kali Linux 2024.x 64-bit"
+    min_ram_gb: 2
+    min_disk_gb: 20
+    roles: ["Red Team Attack Platform", "Port Scanning (nmap)", "Credential Testing (hydra)", "Atomic Red Team Linux Launcher"]
+    ip: "10.60.0.200"
+
+  docker_host:
+    name: "Docker SOC Host"
+    os: "Linux / macOS / WSL2"
+    min_ram_gb: 8
+    recommended_ram_gb: 16
+    min_disk_gb: 50
+    roles: ["SIEM Stack", "EDR Manager", "Case Management", "Threat Intel"]
