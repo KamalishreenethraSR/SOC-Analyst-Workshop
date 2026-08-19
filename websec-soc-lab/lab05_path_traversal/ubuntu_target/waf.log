@@ -1,0 +1,4 @@
+127.0.0.1 - - [19/Aug/2026 19:38:57] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2026 19:38:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2026 19:38:57] "GET /view_file?file=../../etc/passwd HTTP/1.1" 403 -
+7.689211] IP=127.0.0.1 METHOD=GET URL=/view_file?file=../../etc/passwd TYPE=PATH_TRAVERSAL ACTION=BLOCKED

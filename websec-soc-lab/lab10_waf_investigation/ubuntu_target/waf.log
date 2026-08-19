@@ -1,0 +1,4 @@
+127.0.0.1 - - [19/Aug/2026 19:39:00] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2026 19:39:00] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2026 19:39:00] "GET /search?q=normal_query HTTP/1.1" 200 -
+19T19:39:00.164018] IP=127.0.0.1 METHOD=GET URL=/search?q=normal_query TYPE=BASELINE_TRAFFIC ACTION=ALLOWED

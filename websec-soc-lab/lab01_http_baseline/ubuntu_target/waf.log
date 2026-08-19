@@ -1,0 +1,12 @@
+Starting Python WAF on port 6001 -> Forwarding to 5001...
+Traceback (most recent call last):
+  File "/home/redmon/Public/Web-sec/python-websec-soc-lab/lab01_http_baseline/ubuntu_target/waf.py", line 131, in <module>
+    with socketserver.TCPServer(("0.0.0.0", WAF_PORT), WAFProxyHandler) as httpd:
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/socketserver.py", line 457, in __init__
+    self.server_bind()
+    ~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/socketserver.py", line 478, in server_bind
+    self.socket.bind(self.server_address)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 98] Address already in use
